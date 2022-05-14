@@ -125,11 +125,21 @@ def serviceClient(cliSock, username):
 if len(sys.argv) == 2:
     #The remote host and port
     HOST = ""
+
+    #Check if argument is <PORT>
+    try:
+        eval(sys.argv[1])
+    except SyntaxError:
+        print("ERROR: User must specify <PORT>. Optionally, also specify <HOST ADDRESS>.\n")
+        exit(-1)
+
     PORT = int(sys.argv[1])
+
 elif len(sys.argv) == 3:
-    PORT, HOST = int(sys.argv[1]), sys.argv[2]
+    HOST, PORT = sys.argv[1], int(sys.argv[2])
+
 else:
-    print("ERROR: User must at least specify <PORT>. Optionally, also specify <HOST ADDRESS>\n")
+    print("ERROR: User must at least specify <PORT>. Optionally, also specify <HOST ADDRESS>.\n")
     exit(-1)
 
 #The socket the server uses for listening
