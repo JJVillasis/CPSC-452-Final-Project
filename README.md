@@ -20,7 +20,7 @@ Evan Wu - Evanh.wu@csu.fullerton.edu
 Po-Tyng (Peter) Wu - gaidepeter@csu.fullerton.edu
 
 ## Programming Language:
-3.10
+Python 3.10
 
 ## How to Execute (Server):
 In a command terminal, change the directory so that it may point to the project folder.
