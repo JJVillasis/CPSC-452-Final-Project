@@ -25,18 +25,18 @@ Po-Tyng (Peter) Wu - gaidepeter@csu.fullerton.edu
 ## How to Execute (Server):
 In a command terminal, change the directory so that it may point to the project folder.
 
-To run the host server, enter `python Server.py <PORT> <HOST ADDRESS>` into the terminal. Where:
+To run the host server, enter `python Server.py <HOST ADDRESS> <PORT>` into the terminal. Where:
 - `PORT`: Network port the server listens to
 - `HOST ADDRESS`: The IP address the server binds to
 
 If the user wishes to listen to all addresses in a port, they can enter `python Server.py <PORT>`
 
 ### Example: 
-`python Server.py 2345 127.0.0.1` binds the server to the computer's local address "127.0.0.1" and listens to port "2345" for any client attempting to connect.
+`python Server.py 127.0.0.1 2345` binds the server to the computer's local address "127.0.0.1" and listens to port "2345" for any client attempting to connect.
 
 or 
 
-`python Server.py 2345` binds the server to "" and listens to port "2345" for any client attempting to connect
+`python Server.py 2345` listens to all addresses in port "2345" for any client attempting to connect
 
 ## How to Execute (Client)
 In a command terminal seperate from a terminal running the server,  once again change the directory so that it may point to the project folder.
