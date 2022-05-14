@@ -127,7 +127,7 @@ if len(sys.argv) == 2:
     HOST = ""
     PORT = int(sys.argv[1])
 elif len(sys.argv) == 3:
-    POST, HOST = int(sys.argv[1]), sys.argv[2]
+    PORT, HOST = int(sys.argv[1]), sys.argv[2]
 else:
     print("ERROR: User must at least specify <PORT>. Optionally, also specify <HOST ADDRESS>\n")
     exit(-1)
