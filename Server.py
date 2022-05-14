@@ -3,7 +3,7 @@ import threading
 
 #Host IP and Port
 listenHost = ""
-listenPort = 1234
+listenPort = 50000
 
 #The socket the server uses for listening
 listenSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

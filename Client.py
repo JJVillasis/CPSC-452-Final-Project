@@ -1,7 +1,9 @@
 import socket
 
-HOST = '127.0.0.1'    # The remote host
-PORT = 1234              # The same port as used by the server
+#The remote host
+HOST = '127.0.0.1'
+#The same port as used by the server
+PORT = 50000
 
 #TESTING - Print entered host and port
 print("Host address:", HOST)
