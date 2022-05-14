@@ -1,20 +1,8 @@
 import socket
+import sys
+from time import sleep
 
-#The remote host
-HOST = '127.0.0.1'
-#The same port as used by the server
-PORT = 50000
-
-#TESTING - Print entered host and port
-print("Host address:", HOST)
-print("Port number:", PORT)
-print()
-
-#Establish client Socket
-cliSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-#Connect to host server
-cliSock.connect((HOST, PORT))
+#################### Client Functions ####################
 
 ################################################
 # recvMsg - The function to handle the message #
@@ -59,10 +47,42 @@ def sendMsg(sock, msg):
     #Send message to host
     sock.sendall(msgSend)
 
-#Send Username to Host
+#Parse command line to get <HOST> and <PORT>
+if len(sys.argv) != 3:
+    print("ERROR: User must specify <HOST ADDRESS> and <PORT>.\n")
+    exit(-1)
+
+#The remote host
+HOST, PORT = sys.argv[1], int(sys.argv[2])
+
+print(f"Connecting to {(HOST, PORT)}...\n")
+sleep(2)
+
+#Establish client Socket
+cliSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+#Connect to host server
+cliSock.connect((HOST, PORT))
+
+print("Connection successful!\n")
+
+#Login to server
+print("LOG INTO YOUR ACCOUNT:")
 username = input("Username: ")
 sendMsg(cliSock, username)
+password = input("Password: ")
+sendMsg(cliSock, password)
 
+print("\nVerifying account...")
+
+#Verify account
+verify = recvMsg(cliSock)
+
+if verify.decode() == "FALSE":
+    print("ERROR: <USERNAME> or <PASSWORD> not found.\n")
+    exit(-1)
+
+print("\nAccount Found!\n")
 
 #Event Loop
 while True:
@@ -78,5 +98,4 @@ while True:
         print(f"Connection ended with {HOST}. Goodbye.")
         break
 
-    dataD = data.decode()
-    print('Received:', dataD)
+    print(f"Received: {data.decode()}\n")
