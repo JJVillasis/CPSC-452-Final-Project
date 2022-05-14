@@ -46,4 +46,4 @@ To join the server as a client, enter `python Client.py <HOST ADDRESS> <PORT>` i
 - `PORT`: Network port the host server is listening to
 
 ### Example: 
-`python Server.py 127.0.0.1 2345` connects to the server via the computer's local address "127.0.0.1" and  port "2345".
+`python Client.py 127.0.0.1 2345` connects to the server via the computer's local address "127.0.0.1" and  port "2345".
