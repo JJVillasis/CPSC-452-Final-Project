@@ -136,6 +136,13 @@ if len(sys.argv) == 2:
     PORT = int(sys.argv[1])
 
 elif len(sys.argv) == 3:
+    #Check if arguments are in the correct order
+    try:
+        eval(sys.argv[2])
+    except SyntaxError:
+        print("ERROR: User must specify arguments in the correct order: <HOST ADDRESS> <PORT>\n")
+        exit(-1)
+
     HOST, PORT = sys.argv[1], int(sys.argv[2])
 
 else:
