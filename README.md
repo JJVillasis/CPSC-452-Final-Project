@@ -26,8 +26,8 @@ Po-Tyng (Peter) Wu - gaidepeter@csu.fullerton.edu
 In a command terminal, change the directory so that it may point to the project folder.
 
 To run the host server, enter `python Server.py <HOST ADDRESS> <PORT>` into the terminal. Where:
-- `PORT`: Network port the server listens to
 - `HOST ADDRESS`: The IP address the server binds to
+- `PORT`: Network port the server listens to
 
 If the user wishes to listen to all addresses in a port, they can enter `python Server.py <PORT>`
 
