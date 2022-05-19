@@ -20,7 +20,7 @@ Evan Wu - Evanh.wu@csu.fullerton.edu
 Po-Tyng (Peter) Wu - gaidepeter@csu.fullerton.edu
 
 ## Programming Language:
-3.10
+Python 3.10
 
 ## How to Execute (Server):
 In a command terminal, change the directory so that it may point to the project folder.
@@ -29,7 +29,7 @@ To run the host server, enter `python Server.py <HOST ADDRESS> <PORT>` into the 
 - `HOST ADDRESS`: The IP address the server binds to
 - `PORT`: Network port the server listens to
 
-If the user wishes to listen to all addresses in a port, they can enter `python Server.py <PORT>`
+If the user wishes to listen to all addresses in a port, they can enter `python Server.py <PORT>`, and the server binds to the address "".
 
 ### Example: 
 `python Server.py 127.0.0.1 2345` binds the server to the computer's local address "127.0.0.1" and listens to port "2345" for any client attempting to connect.
