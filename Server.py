@@ -45,7 +45,7 @@ def verifyAccount(username, password):
 
         #Check if password is found
         if hexDig == account["password"]:
-            return True
+            return account
     
     return False
 
@@ -120,6 +120,9 @@ def serviceClient(cliSock, username):
     #Connection ended with client
     print(f"Ending connection with {cliSock.getsockname()}\n")
 
+    #Remove Socket from dictionary
+    del usernameToSockDic[username]
+
 
 #Parse command line to get <HOST> and <PORT>
 if len(sys.argv) == 2:
@@ -172,28 +175,36 @@ while True:
     print(f"New client connected: {cliInfo}")
     
     #Get the username and password
-    username = recvMsg(clienComSock)    
-    print(f"Got username: {username}")
-    password = recvMsg(clienComSock)
-    print(f"Got password: {password}")
+    #Check if account exists in account records
+    account = verifyAccount(recvMsg(clienComSock).decode(), recvMsg(clienComSock).decode())
 
     sleep(2)
-
-    #Check if account exists in account records
-    if verifyAccount(username.decode(), password.decode()):
+    if account:
         
         #send that account is found
         print("\nAccount verified.\n")
         sendMsg(clienComSock, "TRUE")
 
-        #The user name to socket   
-        usernameToSockDic[username] = clienComSock
+        #Check if socket is already associated with username
+        if account["username"] in usernameToSockDic:
+            sendMsg(clienComSock, "FALSE")
+            print(f"Account {account["username"]} already logged in to {usernameToSockDic[account["username"].getsockname()]}.\nEnding connection with {cliInfo}\n")
         
-        #Create a new thread
-        cliThread = threading.Thread(target=serviceClient, args=(clienComSock,username,))
-        
-        #Start the thread
-        cliThread.start()
+        else:
+            sendMsg(clienComSock, "TRUE")
+
+            #The username to socket   
+            usernameToSockDic[account["username"]] = clienComSock
+
+            #Say Hello
+            name = account["nameF"]
+            sendMsg(clienComSock, f"Hello, {name}.\n")
+            
+            #Create a new thread
+            cliThread = threading.Thread(target=serviceClient, args=(clienComSock,account["username"],))
+            
+            #Start the thread
+            cliThread.start()
 
     else:
         sendMsg(clienComSock, "FALSE")

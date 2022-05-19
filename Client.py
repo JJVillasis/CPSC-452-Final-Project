@@ -47,6 +47,9 @@ def sendMsg(sock, msg):
     #Send message to host
     sock.sendall(msgSend)
 
+def createOrder():
+    
+
 #Parse command line to get <HOST> and <PORT>
 if len(sys.argv) != 3:
     print("ERROR: User must specify <HOST ADDRESS> and <PORT>.\n")
@@ -76,13 +79,19 @@ sendMsg(cliSock, password)
 print("\nVerifying account...")
 
 #Verify account
-verify = recvMsg(cliSock)
-
-if verify.decode() == "FALSE":
+if recvMsg(cliSock).decode() == "FALSE":
     print("ERROR: <USERNAME> or <PASSWORD> not found.\n")
     exit(-1)
 
+#Check if account is logged in to another socket
+if recvMsg(cliSock).decode() == "FALSE":
+    print("ERROR: Account logged in to another socket.\n")
+    exit(-1)
+
+#Welcome Account
 print("\nAccount Found!\n")
+hello = recvMsg(cliSock)
+print(hello.decode())
 
 #Event Loop
 while True:
