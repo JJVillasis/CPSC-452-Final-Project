@@ -1,3 +1,4 @@
+from getpass import getpass
 import socket
 import sys
 from time import sleep
@@ -72,7 +73,7 @@ def sendMsg(sock, msg):
 print("LOG INTO YOUR ACCOUNT:")
 username = input("Username: ")
 sendMsg(cliSock, username)
-password = input("Password: ")
+password = getpass("Password: ")
 sendMsg(cliSock, password)
 
 print("\nVerifying account...")
