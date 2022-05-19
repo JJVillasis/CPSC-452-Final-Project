@@ -2,6 +2,25 @@ import socket
 import sys
 from time import sleep
 
+#Parse command line to get <HOST> and <PORT>
+if len(sys.argv) != 3:
+    print("ERROR: User must specify <HOST ADDRESS> and <PORT>.\n")
+    exit(-1)
+
+#The remote host
+HOST, PORT = sys.argv[1], int(sys.argv[2])
+
+print(f"Connecting to {(HOST, PORT)}...\n")
+sleep(2)
+
+#Establish client Socket
+cliSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+#Connect to host server
+cliSock.connect((HOST, PORT))
+
+print("Connection successful!\n")
+
 #################### Client Functions ####################
 
 ################################################
@@ -47,27 +66,7 @@ def sendMsg(sock, msg):
     #Send message to host
     sock.sendall(msgSend)
 
-def createOrder():
-    
-
-#Parse command line to get <HOST> and <PORT>
-if len(sys.argv) != 3:
-    print("ERROR: User must specify <HOST ADDRESS> and <PORT>.\n")
-    exit(-1)
-
-#The remote host
-HOST, PORT = sys.argv[1], int(sys.argv[2])
-
-print(f"Connecting to {(HOST, PORT)}...\n")
-sleep(2)
-
-#Establish client Socket
-cliSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-#Connect to host server
-cliSock.connect((HOST, PORT))
-
-print("Connection successful!\n")
+#################### Client Login ####################
 
 #Login to server
 print("LOG INTO YOUR ACCOUNT:")
@@ -88,12 +87,13 @@ if recvMsg(cliSock).decode() == "FALSE":
     print("ERROR: Account logged in to another socket.\n")
     exit(-1)
 
-#Welcome Account
+#Server Hello
 print("\nAccount Found!\n")
 hello = recvMsg(cliSock)
 print(hello.decode())
 
-#Event Loop
+#################### Client Event Loop ####################
+
 while True:
     #Send message to the host
     userInput = input("Send Something to the Host: ")
