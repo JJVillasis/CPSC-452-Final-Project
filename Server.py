@@ -142,6 +142,32 @@ def recvMsg(sock):
     return data
 
 
+##################################################################
+# verifyDSA - Use DSA to verify a message with a signature.      #
+# @param message - The message to be signed.                     #
+# @param signature - Possible signature associated with message. #
+# @param keyFile - The file name of the PEM that stores the key. #
+# @returns if verification succeed.                              #
+##################################################################
+def verifyDSA(message, signature, keyFile):
+
+    #Retrieve public key
+    with open("Public Key PEMs/" + keyFile, "rb") as file:
+        PU = DSA.importKey(file.read())
+
+    #Create hash of message
+    hashedMessage = SHA256.new(message)
+    verifier = DSS.new(PU, "fips-186-3")
+
+    #Attempt verification
+    try:
+        verifier.verify(hashedMessage, signature)
+        return True
+    except ValueError:
+        return False
+
+
+
 #############################################################################
 # serviceClient - Will be called by the thread that handles a single client #
 # @param clisock - the client socket                                        #
@@ -151,19 +177,50 @@ def serviceClient(cliSock, account):
 
     # Keep servicing the client until it disconnects
     while cliSock:
-    
-        # Receive the data from the client
-        cliData = recvMsg(cliSock)
 
-        #Check if client ended conneciton
-        if cliData.decode() == "goodbye":
-            sendMsg(cliSock, cliData.decode()) 
-            break
+        # # Receive the data from the client
+        # cliData = recvMsg(cliSock)
+
+        # #Check if client ended conneciton
+        # if cliData.decode() == "goodbye":
+        #     sendMsg(cliSock, cliData.decode()) 
+        #     break
     
-        print(f"Got data {cliData} from client socket {cliSock.getpeername()}\n")
+        # print(f"Got data {cliData} from client socket {cliSock.getpeername()}\n")
         
-        # Echo message to client
-        sendMsg(cliSock, "Echo: " + cliData.decode())
+        # #Echo message to client
+        # sendMsg(cliSock, "Echo: " + cliData.decode())
+
+        ########## DSA Verification ##########
+
+        #Get signature type, message, and signature
+        signType = recvMsg(cliSock)
+        message = recvMsg(cliSock)
+        signature = recvMsg(cliSock)
+
+        #Verify message
+        if verifyDSA(message, signature, account["publicDSA"]):
+
+            #Message signature verified
+            print("Message verified")
+            sendMsg(cliSock, "True")
+
+            #Print retreived message
+            print(f"Got data {message} from client socket {cliSock.getpeername()}\n")
+
+            #Check if client ended connection
+            if message.decode() == "goodbye":
+                sendMsg(cliSock, message.decode()) 
+                break
+
+            #Echo message to client
+            sendMsg(cliSock, "Echo: " + message.decode())
+
+        else:
+            #Message signature rejected
+            print("Message invalidated")
+            sendMsg(cliSock, "False")
+            break
 
     #Connection ended with client
     print(f"Ending connection with {cliSock.getpeername()}\n")
@@ -190,16 +247,16 @@ while True:
         
         #send that account is found
         print("\nAccount verified.\n")
-        sendMsg(clienComSock, "TRUE")
+        sendMsg(clienComSock, "True")
 
         #Check if socket is already associated with username
         if account["username"] in usernameToSockDic:
-            sendMsg(clienComSock, "FALSE")
+            sendMsg(clienComSock, "False")
             print("Account \'" + str(account["username"]) + "\' already logged in to", usernameToSockDic[account["username"]].getpeername())
             print(f"Ending connection with {cliInfo}\n")
         
         else:
-            sendMsg(clienComSock, "TRUE")
+            sendMsg(clienComSock, "True")
 
             #The username to socket   
             usernameToSockDic[account["username"]] = clienComSock
@@ -215,5 +272,5 @@ while True:
             cliThread.start()
 
     else:
-        sendMsg(clienComSock, "FALSE")
+        sendMsg(clienComSock, "False")
         print(f"Account not found.\nEnding connection with {cliInfo}\n")

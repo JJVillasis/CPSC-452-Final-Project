@@ -72,23 +72,40 @@ def sendMsg(sock, msg):
     #Send message to host
     sock.sendall(msgSend)
 
+def sendSign(sock, sign):
+
+    #Get length of the message
+    signLen = str(len(sign))
+
+    #Prepend header "000" to message
+    while len(signLen) < 3:
+        signLen = "0" + signLen
+
+    #Encode the message header into a byte array
+    signLen = signLen.encode()
+
+    #Combine message with header
+    signSend = signLen + sign
+
+    #Send message to host
+    sock.sendall(signSend)
+
 ##################################################################
-# signDSA - Use DSA to sign a message                            #
+# signDSA - Use DSA to sign a message.                           #
 # @param message - The message to be signed.                     #
 # @param keyFile - The file name of the PEM that stores the key. #
 # @param password - Password to the key (if used).               #
 # @returns signature associated with the message.                #
 ##################################################################
 
-def signDSA(message, keyFile, password = False):
+def signDSA(message, keyFile, password):
 
     #Retrieve private key
     with open("Private Key PEMs/" + keyFile, "rb") as file:
-        if password:
-            PR = DSA.importKey(file.read(), password)
-
-        else:
+        if password.lower() == "none":
             PR = DSA.importKey(file.read())
+        elif password:
+            PR = DSA.importKey(file.read(), password)
 
     #Create hash of message
     hashedMessage = SHA256.new(message.encode())
@@ -103,40 +120,75 @@ def signDSA(message, keyFile, password = False):
 #################### Account Login ####################
 
 #Login to server
+print("==============================")
 print("LOG INTO YOUR ACCOUNT:")
-sendMsg(cliSock, input("Username: "))
+username = input("Username: ")
+sendMsg(cliSock, username)
 sendMsg(cliSock, getpass("Password: "))
 
 print("\nVerifying account...")
 
 #Verify account
-if recvMsg(cliSock).decode() == "FALSE":
+if recvMsg(cliSock).decode() == "False":
     print("ERROR: <USERNAME> or <PASSWORD> not found.\n")
     exit(-1)
 
 #Check if account is logged in to another socket
-if recvMsg(cliSock).decode() == "FALSE":
+if recvMsg(cliSock).decode() == "False":
     print("ERROR: Account logged in to another socket.\n")
     exit(-1)
 
 #Server Hello
-print("\nAccount Found!\n")
+print("Account Found!")
+print("==============================\n")
 print(recvMsg(cliSock).decode())
 
 
 #################### Client Event Loop ####################
 
 while True:
-    #Send message to the host
-    userInput = input("Send Something to the Host: ")
-    sendMsg(cliSock, userInput)
+    # #Send message to the host
+    # userInput = input("Send Something to the Host: ")
+    # sendMsg(cliSock, userInput)
 
-    #Wait for responce from host
-    data = recvMsg(cliSock)
+    # #Wait for response from host
+    # data = recvMsg(cliSock)
 
-    #End connection with host
-    if data.decode() == "goodbye":
-        print(f"Connection ended with {HOST}. Goodbye.")
+    # #End connection with host
+    # if data.decode() == "goodbye":
+    #     print(f"Connection ended with {HOST}. Goodbye.")
+    #     break
+
+    # print(f"Received: {data.decode()}\n")
+
+    ########## DSA Verification ##########
+
+    #Get type and message
+    message = input("Send something to the Host: ")
+    dsType = input("Digital Signature type (DSA/RSA): ")
+
+    #Sign message
+    signature = signDSA(message, "private" + username + dsType.upper() + ".pem", getpass("Enter keypass (\'None\' if no password): "))
+
+    #Send type, message, and signature to Server
+    sendMsg(cliSock, dsType)
+    sendMsg(cliSock, message)
+    sendSign(cliSock, signature)
+
+    #Check if message is verified
+    if recvMsg(cliSock).decode() == "True":
+        print("Message verified.")
+
+        data = recvMsg(cliSock)
+
+        #End connection with host
+        if data.decode() == "goodbye":
+            print(f"Connection ended with {HOST}. Goodbye.")
+            break
+
+        print(f"Received: {data.decode()}\n")
+
+    else:
+        print("Message invalidated.")
         break
 
-    print(f"Received: {data.decode()}\n")
