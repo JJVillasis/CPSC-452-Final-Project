@@ -1,3 +1,6 @@
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import DSA
+from Crypto.Signature import DSS
 from getpass import getpass
 import socket
 import sys
@@ -22,6 +25,7 @@ cliSock.connect((HOST, PORT))
 
 print("Connection successful!\n")
 
+
 #################### Client Functions ####################
 
 ################################################
@@ -42,6 +46,7 @@ def recvMsg(sock):
     data = sock.recv(intSize)
 
     return data
+
 
 #################################################
 # sendMSG - Format given message and send it to #
@@ -67,14 +72,40 @@ def sendMsg(sock, msg):
     #Send message to host
     sock.sendall(msgSend)
 
-#################### Client Login ####################
+##################################################################
+# signDSA - Use DSA to sign a message                            #
+# @param message - The message to be signed.                     #
+# @param keyFile - The file name of the PEM that stores the key. #
+# @param password - Password to the key (if used).               #
+# @returns signature associated with the message.                #
+##################################################################
+
+def signDSA(message, keyFile, password = False):
+
+    #Retrieve private key
+    with open("Private Key PEMs/" + keyFile, "rb") as file:
+        if password:
+            PR = DSA.importKey(file.read(), password)
+
+        else:
+            PR = DSA.importKey(file.read())
+
+    #Create hash of message
+    hashedMessage = SHA256.new(message.encode())
+    signer = DSS.new(PR, "fips-186-3")
+
+    #Sign the message
+    signature = signer.sign(hashedMessage)
+
+    return signature
+
+
+#################### Account Login ####################
 
 #Login to server
 print("LOG INTO YOUR ACCOUNT:")
-username = input("Username: ")
-sendMsg(cliSock, username)
-password = getpass("Password: ")
-sendMsg(cliSock, password)
+sendMsg(cliSock, input("Username: "))
+sendMsg(cliSock, getpass("Password: "))
 
 print("\nVerifying account...")
 
@@ -90,8 +121,8 @@ if recvMsg(cliSock).decode() == "FALSE":
 
 #Server Hello
 print("\nAccount Found!\n")
-hello = recvMsg(cliSock)
-print(hello.decode())
+print(recvMsg(cliSock).decode())
+
 
 #################### Client Event Loop ####################
 

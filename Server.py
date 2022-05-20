@@ -1,4 +1,6 @@
-from hashlib import sha256
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import DSA
+from Crypto.Signature import DSS
 import json
 import socket
 import sys
@@ -79,13 +81,14 @@ def getID(username):
 ########################################################
 def verifyAccount(username, password):
     
+    #Check username
     account = getID(username)
     
     #Check if account exists
     if account:
         
         #Find sha256 hash of password
-        hashedPass = sha256(password.encode())
+        hashedPass = SHA256.new(password.encode())
         hexDig = hashedPass.hexdigest()
 
         #Check if password is found
@@ -144,7 +147,7 @@ def recvMsg(sock):
 # @param clisock - the client socket                                        #
 # @param username - the user name to serve                                  #
 #############################################################################
-def serviceClient(cliSock, username):
+def serviceClient(cliSock, account):
 
     # Keep servicing the client until it disconnects
     while cliSock:
@@ -157,16 +160,16 @@ def serviceClient(cliSock, username):
             sendMsg(cliSock, cliData.decode()) 
             break
     
-        print(f"Got data {cliData} from client socket {cliSock.getsockname()}\n")
+        print(f"Got data {cliData} from client socket {cliSock.getpeername()}\n")
         
         # Echo message to client
         sendMsg(cliSock, "Echo: " + cliData.decode())
 
     #Connection ended with client
-    print(f"Ending connection with {cliSock.getsockname()}\n")
+    print(f"Ending connection with {cliSock.getpeername()}\n")
 
     #Remove Socket from dictionary
-    del usernameToSockDic[username]
+    del usernameToSockDic[account["username"]]
 
 
 #################### Server Loop ####################
@@ -192,7 +195,8 @@ while True:
         #Check if socket is already associated with username
         if account["username"] in usernameToSockDic:
             sendMsg(clienComSock, "FALSE")
-            print(f"Account {account["username"]} already logged in to {usernameToSockDic[account["username"].getsockname()]}.\nEnding connection with {cliInfo}\n")
+            print("Account \'" + str(account["username"]) + "\' already logged in to", usernameToSockDic[account["username"]].getpeername())
+            print(f"Ending connection with {cliInfo}\n")
         
         else:
             sendMsg(clienComSock, "TRUE")
@@ -205,7 +209,7 @@ while True:
             sendMsg(clienComSock, f"Hello, {name}.\n")
             
             #Create a new thread
-            cliThread = threading.Thread(target=serviceClient, args=(clienComSock,account["username"],))
+            cliThread = threading.Thread(target=serviceClient, args=(clienComSock,account,))
             
             #Start the thread
             cliThread.start()
