@@ -2,7 +2,15 @@
 Username: "Username"
 Password: "Password"
 
+========== Log in ==========
+Email: "CPSC452Final@Gmail.com"
+Password: "Pass452!"
+
 
 ========== DSA ==========
 Public Key: "publicUsernameDSA"
-Private Key: "privateUsernameDSA"
+Private Key: "privateUsernameDSA" - Password: "Password"
+
+========== RSA ==========
+Public Key: "publicUsernameRSA"
+Private Key: "privateUsernameRSA" - Password: "Password"

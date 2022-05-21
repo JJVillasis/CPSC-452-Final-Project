@@ -6,6 +6,7 @@
 			"nameF": "Joshua",
 			"nameL": "Villasis",
 			"publicDSA": "publiczztop2101DSA.pem",
+			"publicRSA": "publiczztop2101RSA.pem",
 			"password": "3c3d3cebd3f7388d9802537c7e8e046d33508634d77fbd94115557b306b17fa0",
 			"email": "zztop2101@gmail.com"
 		},
@@ -14,6 +15,8 @@
 			"username": "JohnDoe",
 			"nameF": "John",
 			"nameL": "Doe",
+			"publicDSA": "publicJohnDoeDSA.pem",
+			"publicRSA": "publicJohnDoeRSA.pem",
 			"password": "d6b8dbf0f34d68e031f71f8bf09c7e9bd340ab07e5eda67d350f738499c66f89",
 			"email": "JohnDoe@gmail.com"
 		},
@@ -22,6 +25,8 @@
 			"username": "JaneDoe",
 			"nameF": "Jane",
 			"nameL": "Doe",
+			"publicDSA": "publicJaneDoeDSA.pem",
+			"publicRSA": "publicJaneDoeRSA.pem",
 			"password": "a98dc1cbbff7a3309642d2e9fd7d1df2283fec84e2353a24616271b3c1c69731",
 			"email": "JaneDoe@gmail.com"
 		},
@@ -33,7 +38,7 @@
 			"password": "e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a",
 			"publicDSA": "publicUsernameDSA.pem",
 			"publicRSA": "publicUsernameRSA.pem",
-			"email": "fakeemail@yahoo.com"
+			"email": "CPSC452Final@Gmail.com"
 		}
 	]
 }
