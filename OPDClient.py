@@ -8,9 +8,10 @@ from time import sleep
 
 class OPDClient():
 
-    def __init__(self, address):
-        self.HOST = address[0]
-        self.PORT = address[1]
+    def __init__(self, HOST, PORT):
+        
+        self.HOST = HOST
+        self.PORT = PORT
 
         print(f"Connecting to {(self.HOST, self.PORT)}...\n")
         sleep(1)
@@ -54,8 +55,8 @@ class OPDClient():
         print("Account Found!")
         print("".center(50,"="), "\n")
         print(self.recvMsg(self.sock).decode())
-        self.jsonFile = self.recvMsg(self.sock).decode()
-        print("Recieved Inventory\n")
+        # self.jsonFile = self.recvMsg(self.sock).decode()
+        # print("Recieved Inventory\n")
 
 #################### Client Order Loop ####################
 
@@ -64,6 +65,14 @@ class OPDClient():
          while True:
 
             print("".center(50,"="))
+
+            #Retrieve vendor inventory
+            print("".center(50,"#"))
+            s = " Vendor " + str(self.sock.getsockname()) + " Inventory "
+            print(s.center(50, "#"))
+            print("".center(50,"#"))
+
+            print(self.recvMsg(self.sock).decode())
 
             ########## Digital Signature ##########
 
@@ -249,15 +258,3 @@ class OPDClient():
         signature = pkcs1_15.new(PR).sign(hashedMessage)
 
         return signature
-
-
-    def printInventory(self, jsonName):
-        invJson = json.load(open(jsonName))
-
-        for inventory in invJson:
-            for category in inventory:
-                print(f" {category} ".center(50, "="))
-                for item in inventory[category]:
-                    itemDes = item["itemName"] + " (" + str(item["itemCount"]) + ")"
-                    print(itemDes.ljust(40, " ") + str(item["itemCost"]).rjust(10, " "))
-                print()

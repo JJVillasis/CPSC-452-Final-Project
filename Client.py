@@ -9,4 +9,4 @@ if len(sys.argv) != 3:
 #The remote host
 HOST, PORT = sys.argv[1], int(sys.argv[2])
 
-OPDClient((HOST, PORT))
+OPDClient(HOST, PORT)
