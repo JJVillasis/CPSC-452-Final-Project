@@ -1,6 +1,6 @@
 from Crypto.Hash import SHA256
-from Crypto.PublicKey import DSA
-from Crypto.Signature import DSS
+from Crypto.PublicKey import DSA, RSA
+from Crypto.Signature import DSS, pkcs1_15
 from getpass import getpass
 import socket
 import sys
@@ -15,7 +15,7 @@ if len(sys.argv) != 3:
 HOST, PORT = sys.argv[1], int(sys.argv[2])
 
 print(f"Connecting to {(HOST, PORT)}...\n")
-sleep(2)
+sleep(1)
 
 #Establish client Socket
 cliSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -116,11 +116,62 @@ def signDSA(message, keyFile, password):
 
     return signature
 
+##################################################################
+# signRSA - Use RSA to sign a message.                           #
+# @param message - The message to be signed.                     #
+# @param keyFile - The file name of the PEM that stores the key. #
+# @param password - Password to the key (if used).               #
+# @returns signature associated with the message.                #
+##################################################################
+
+def signRSA(message, keyFile, password):
+    
+    #Retrieve private key
+    with open("Private Key PEMs/" + keyFile, "rb") as file:
+        if password.lower() == "none":
+            PR = RSA.import_key(file.read())
+        elif password:
+            PR = RSA.import_key(file.read(), password)
+
+    #Get message hash
+    hashedMessage = SHA256.new(message.encode())
+
+    #Sign message
+    signature = pkcs1_15.new(PR).sign(hashedMessage)
+
+    return signature
+
+##############################################################
+# signMessage - Signs a message using DSA/RSA.               #
+# @param signType - The digital signature scheme to be used. #
+# @param message - The message to be signed.                 #
+# @param username - Username of Account.                     #
+# @param password - Password to the key (if used).           #
+# @returns signature associated with the message.            #
+##############################################################
+
+def signMessage(signType, message, username, password):
+    
+    #Get file name
+    file = "private" + username + signType.upper() + ".pem"
+
+    #DSA Digital Signature
+    if signType.upper() == "DSA":
+        return signDSA(message, file, password)
+
+    #RSA Digital Signature
+    elif signType.upper() == "RSA":
+        return signRSA(message, file, password)
+
+    #Unknown Scheme
+    else:
+        return False
+
 
 #################### Account Login ####################
 
 #Login to server
-print("==============================")
+print("==================================================")
 print("LOG INTO YOUR ACCOUNT:")
 username = input("Username: ")
 sendMsg(cliSock, username)
@@ -140,40 +191,31 @@ if recvMsg(cliSock).decode() == "False":
 
 #Server Hello
 print("Account Found!")
-print("==============================\n")
+print("==================================================\n")
 print(recvMsg(cliSock).decode())
 
 
 #################### Client Event Loop ####################
 
 while True:
-    # #Send message to the host
-    # userInput = input("Send Something to the Host: ")
-    # sendMsg(cliSock, userInput)
 
-    # #Wait for response from host
-    # data = recvMsg(cliSock)
+    print("==================================================")
 
-    # #End connection with host
-    # if data.decode() == "goodbye":
-    #     print(f"Connection ended with {HOST}. Goodbye.")
-    #     break
-
-    # print(f"Received: {data.decode()}\n")
-
-    ########## DSA Verification ##########
+    ########## Digital Signature ##########
 
     #Get type and message
     message = input("Send something to the Host: ")
-    dsType = input("Digital Signature type (DSA/RSA): ")
+    signType = input("Digital Signature type (DSA/RSA): ")
 
     #Sign message
-    signature = signDSA(message, "private" + username + dsType.upper() + ".pem", getpass("Enter keypass (\'None\' if no password): "))
+    signature = signMessage(signType, message, username, getpass("Password to key ('None' if not used): "))
 
     #Send type, message, and signature to Server
-    sendMsg(cliSock, dsType)
+    sendMsg(cliSock, signType)
     sendMsg(cliSock, message)
     sendSign(cliSock, signature)
+
+    print("\nVerifying Message...")
 
     #Check if message is verified
     if recvMsg(cliSock).decode() == "True":
@@ -183,12 +225,16 @@ while True:
 
         #End connection with host
         if data.decode() == "goodbye":
-            print(f"Connection ended with {HOST}. Goodbye.")
+            print(f"Connection ended with {cliSock.getsockname()}. Goodbye.")
+            print("==================================================\n")
             break
 
         print(f"Received: {data.decode()}\n")
 
     else:
         print("Message invalidated.")
+        print("==================================================\n")
         break
+
+    print("==================================================\n")
 

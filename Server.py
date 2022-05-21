@@ -1,6 +1,6 @@
 from Crypto.Hash import SHA256
-from Crypto.PublicKey import DSA
-from Crypto.Signature import DSS
+from Crypto.PublicKey import DSA, RSA
+from Crypto.Signature import DSS, pkcs1_15
 import json
 import socket
 import sys
@@ -166,6 +166,50 @@ def verifyDSA(message, signature, keyFile):
     except ValueError:
         return False
 
+##################################################################
+# verifyRSA - Use RSA to verify a message with a signature.      #
+# @param message - The message to be signed.                     #
+# @param signature - Possible signature associated with message. #
+# @param keyFile - The file name of the PEM that stores the key. #
+# @returns if verification succeed.                              #
+##################################################################
+def verifyRSA(message, signature, keyFile):
+    
+    #Retrieve public key
+    with open("Public Key PEMs/" + keyFile, "rb") as file:
+        PU = RSA.import_key(file.read())
+
+    #Get message hash
+    hashedMessage = SHA256.new(message)
+
+    #Attempt Verification
+    try:
+        pkcs1_15.new(PU).verify(hashedMessage, signature)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+####################################################################
+# verifyMessage - Verify the signature of a message using RSA/DSA. #
+# @param signType - The digital signature scheme to be used.       #
+# @param message - The message to be signed.                       #
+# @param signature - Possible signature associated with message.   #
+# @param account - account of the client                           #
+# @returns if verification succeed.                                #
+####################################################################
+def verifyMessage(signType, message, signature, account):
+
+    #DSA Signature Verification
+    if signType.upper() == "DSA":
+        return verifyDSA(message, signature, account["publicDSA"])
+
+    #RSA Signature Verification
+    elif signType.upper() == "RSA":
+        return verifyRSA(message, signature, account["publicRSA"])
+
+    #Unknown Scheme
+    else:
+        return False
 
 
 #############################################################################
@@ -178,31 +222,17 @@ def serviceClient(cliSock, account):
     # Keep servicing the client until it disconnects
     while cliSock:
 
-        # # Receive the data from the client
-        # cliData = recvMsg(cliSock)
-
-        # #Check if client ended conneciton
-        # if cliData.decode() == "goodbye":
-        #     sendMsg(cliSock, cliData.decode()) 
-        #     break
-    
-        # print(f"Got data {cliData} from client socket {cliSock.getpeername()}\n")
-        
-        # #Echo message to client
-        # sendMsg(cliSock, "Echo: " + cliData.decode())
-
-        ########## DSA Verification ##########
-
         #Get signature type, message, and signature
         signType = recvMsg(cliSock)
         message = recvMsg(cliSock)
         signature = recvMsg(cliSock)
 
         #Verify message
-        if verifyDSA(message, signature, account["publicDSA"]):
+        sleep(1)
+        if verifyMessage(signType.decode(), message, signature, account):
 
             #Message signature verified
-            print("Message verified")
+            print(f"Message {message} verified")
             sendMsg(cliSock, "True")
 
             #Print retreived message
@@ -242,7 +272,7 @@ while True:
     #Check if account exists in account records
     account = verifyAccount(recvMsg(clienComSock).decode(), recvMsg(clienComSock).decode())
 
-    sleep(2)
+    sleep(1)
     if account:
         
         #send that account is found
