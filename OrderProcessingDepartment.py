@@ -1,6 +1,7 @@
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import DSA, RSA
 from Crypto.Signature import DSS, pkcs1_15
+from datetime import datetime
 import json
 import socket
 import sys
@@ -11,7 +12,7 @@ class OrderProcessingDepartment():
 
     def __init__(self, HOST, PORT):
 
-        self.inventory = json.load(open("inventory.json"))
+        self.file = "inventory.json"
 
         self.HOST = HOST
         self.PORT = PORT
@@ -22,7 +23,9 @@ class OrderProcessingDepartment():
         #Bind socket to specified
         self.listenSock.bind((self.HOST, self.PORT))
 
-        print(f"Listening on {(self.HOST, self.PORT)}.\n")
+        print("".center(50,"="))
+        print(f" Listening on {(self.HOST, self.PORT)} ".center(50, "="))
+        print("".center(50,"="), "")
 
         #Start listening with a connection backlog queue of 100
         self.listenSock.listen(100)
@@ -41,7 +44,10 @@ class OrderProcessingDepartment():
             #Accept the connection
             clienComSock, cliInfo = self.listenSock.accept()
 
-            print(f"New client connected: {cliInfo}")
+            print()
+            print("".center(50,"="))
+            print(f" New client connected: {cliInfo} ".center(50, "="))
+            print("".center(50,"="), "\n")
             
             #Get the username and password
             #Check if account exists in account records
@@ -51,14 +57,14 @@ class OrderProcessingDepartment():
             if account:
                 
                 #send that account is found
-                print("\nAccount verified.\n")
+                print(f"{cliInfo}: Account verified.")
                 self.sendMsg(clienComSock, "True")
 
                 #Check if socket is already associated with username
                 if account["username"] in self.usernameToSockDic:
                     self.sendMsg(clienComSock, "False")
-                    print("Account \'" + str(account["username"]) + "\' already logged in to", self.usernameToSockDic[account["username"]].getpeername())
-                    print(f"Ending connection with {cliInfo}\n")
+                    print(f"{cliInfo}: Account \'" + str(account["username"]) + "\' already logged in to", self.usernameToSockDic[account["username"]].getpeername())
+                    print(f"{cliInfo}: Ending connection.")
                 
                 else:
                     self.sendMsg(clienComSock, "True")
@@ -68,7 +74,7 @@ class OrderProcessingDepartment():
 
                     #Say Hello
                     name = account["nameF"]
-                    self.sendMsg(clienComSock, f"Hello, {name}.\n")
+                    self.sendMsg(clienComSock, f"Hello, {name}.")
                     
                     #Create a new thread
                     cliThread = threading.Thread(target=self.serviceClient, args=(clienComSock,account,))
@@ -78,7 +84,7 @@ class OrderProcessingDepartment():
 
             else:
                 self.sendMsg(clienComSock, "False")
-                print(f"Account not found.\nEnding connection with {cliInfo}\n")
+                print(f"{cliInfo}: Account not found.{cliInfo}: Ending connection.")
 
     #############################################################################
     # serviceClient - Will be called by the thread that handles a single client #
@@ -92,39 +98,62 @@ class OrderProcessingDepartment():
 
             #Send inventory to client
             self.sendMsg(cliSock, self.processInventory())
+            print(f"{cliSock.getpeername()}: Sent inventory.")
 
-            #Get signature type, message, and signature
+            #Get order
+            order = self.recvMsg(cliSock)
+
+            #Check if client is ending connection
+            if order.decode().lower() == "quit":
+                self.sendMsg(cliSock, order.decode()) 
+                break 
+
+            #signature type, signature, and timestamp
             signType = self.recvMsg(cliSock)
-            message = self.recvMsg(cliSock)
             signature = self.recvMsg(cliSock)
+            timestamp = self.recvMsg(cliSock).decode()
+            timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
 
-            #Verify message
+            #Verify order
+            print(f"{cliSock.getpeername()}: Verifying order.")
+            
             sleep(1)
-            if self.verifyMessage(signType.decode(), message, signature, account):
+            if self.verifyMessage(signType.decode(), order, signature, account):
 
-                #Message signature verified
-                print(f"Message verified")
                 self.sendMsg(cliSock, "True")
 
-                #Print retreived message
-                print(f"Got data {message} from client socket {cliSock.getpeername()}\n")
+                #Compare timestamps
+                currentTime = datetime.now()
+                timeDiff = currentTime - timestamp
 
-                #Check if client ended connection
-                if message.decode() == "goodbye":
-                    self.sendMsg(cliSock, message.decode()) 
-                    break
+                #Ensure order is not an hour old or older
+                if int(timeDiff.seconds / 3600) < 1:
+                    #Message signature verified
+                    print(f"{cliSock.getpeername()}: Message verified")
+                    self.sendMsg(cliSock, "True")
 
-                #Echo message to client
-                self.sendMsg(cliSock, "Echo: " + message.decode())
+                    #Print retreived order
+                    print(f"{cliSock.getpeername()}: Recieved Order: {order.decode()} at {timestamp}.")
 
-            else:
-                #Message signature rejected
-                print("Message invalidated")
-                self.sendMsg(cliSock, "False")
-                break
+                    #Process Order
+                    print(f"{cliSock.getpeername()}: Processing order.")
+                    sleep(1)
+                    if self.processOrder(order.decode()):
+                        print(f"{cliSock.getpeername()}: Order successfully processed.")
+                        self.sendMsg(cliSock, "True")
+                        continue
+
+                    print(f"{cliSock.getpeername()}: Order failed.")
+                    self.sendMsg(cliSock, "False")
+                    continue
+
+            #Message signature rejected or Timestamp too old
+            print("Message invalidated")
+            self.sendMsg(cliSock, "False")
+            break
 
         #Connection ended with client
-        print(f"Ending connection with {cliSock.getpeername()}\n")
+        print(f"{cliSock.getpeername()}: Ending connection.")
 
         #Remove Socket from dictionary
         del self.usernameToSockDic[account["username"]]
@@ -335,20 +364,74 @@ class OrderProcessingDepartment():
         except (ValueError, TypeError):
             return False
 
+#################### Server Order Processing ####################
+
     #######################################################
     # processInventory - Convert inventory json to string #
     #######################################################
     def processInventory(self):
+
+        #Open inventory
+        inventory = json.load(open(self.file, "r"))
         
+        #Create Inventory string 
         invStr = ""
-        for inventory in self.inventory:
-            for category in inventory:
-                invStr += f" {category} ".center(50, "=") + "\n"
-                for item in inventory[category]:
+        for category in inventory:
+            for catID in category:
+                invStr += f" {catID} ".center(50, "=") + "\n"
+                for item in category[catID]:
                     itemDes = item["itemName"] + " (" + str(item["itemCount"]) + ")"
                     invStr += itemDes.ljust(40, " ") + str(item["itemCost"]).rjust(10, " ") + "\n"
                 invStr += "\n"
         return invStr
 
-    def processOrder(self, item):
-        pass
+
+    #################################################
+    # checkInventory - Check product availability   #
+    # @param product - Product to be checked        #
+    # @returns if product is available in inventory #
+    #################################################
+    def checkInventory(self, product):
+
+        #Open inventory
+        inventory = json.load(open(self.file, "r"))
+
+        for category in range(len(inventory)):
+            for catID in inventory[category]:
+                for item in range(len(inventory[category][catID])):
+                    if inventory[category][catID][item]["itemName"].lower() == product.lower():
+                        return category, catID, item
+
+        return False
+
+    
+    ############################################################
+    # processOrder - Process customer order, send email        #
+    # @param order - Order to be processed                     #
+    # @returns if order was successfully processed             #
+    ############################################################
+    def processOrder(self, order):
+
+        inventory = json.load(open(self.file, "r"))
+
+        #Check product availability
+        if product := self.checkInventory(order):
+            category = product[0]
+            catID = product[1]
+            item = product[2]
+
+            inventory[category][catID][item]["itemCount"] -= 1
+
+            #If item was last in stock, remove item from inventory
+            if inventory[category][catID][item]["itemCount"] == 0:
+                del inventory[category][catID][item]
+
+            #Update inventory
+            file = open(self.file, "w")
+            json.dump(inventory, file)
+            file.close()
+
+            return True
+
+        #Product not found
+        return False

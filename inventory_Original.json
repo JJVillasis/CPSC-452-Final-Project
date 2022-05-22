@@ -1,0 +1,63 @@
+
+[
+	{
+		"Weapons":
+		[
+			{
+				"itemName": "Boxing Tape",
+				"itemCount": 1,
+				"itemCost": 18
+			},
+			{
+				"itemName": "Dynamite",
+				"itemCount": 2,
+				"itemCost": 40
+			},
+			{
+				"itemName": "Energy Gun",
+				"itemCount": 3,
+				"itemCost": 250
+			},
+			{
+				"itemName": "Gun",
+				"itemCount": 2,
+				"itemCost": 50
+			}
+		]
+	},
+	{
+		"Apparel":
+		[
+			{
+				"itemName": "Leather Armor",
+				"itemCount": 1,
+				"itemCost": 50
+			},
+			{
+				"itemName": "Fedora",
+				"itemCount": 1,
+				"itemCost": 10
+			}
+		]
+	},
+	{
+		"Aid":
+		[
+			{
+				"itemName": "Water",
+				"itemCount": 5,
+				"itemCost": 15
+			},
+			{
+				"itemName": "Corn",
+				"itemCount": 6,
+				"itemCost": 10
+			},
+			{
+				"itemName": "Stimpak",
+				"itemCount": 11,
+				"itemCost": 100
+			}
+		]
+	}
+]

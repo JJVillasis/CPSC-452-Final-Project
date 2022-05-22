@@ -1,6 +1,7 @@
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import DSA, RSA
 from Crypto.Signature import DSS, pkcs1_15
+from datetime import datetime
 from getpass import getpass
 import json
 import socket
@@ -24,8 +25,8 @@ class OPDClient():
         print("Connection successful!\n")
 
         #Login to OPD
-        self.accountLogin()
-        self.orderLoop()
+        if self.accountLogin():
+            self.orderLoop()
 
 #################### Client Account Login ####################
 
@@ -39,7 +40,7 @@ class OPDClient():
         self.sendMsg(self.sock, self.username)
         self.sendMsg(self.sock, getpass("Password: "))
 
-        print("\nVerifying account...")
+        print(f"\n{self.sock.getsockname()} verifying account...")
 
         #Verify account
         if self.recvMsg(self.sock).decode() == "False":
@@ -52,18 +53,17 @@ class OPDClient():
             return False
 
         #Server Hello and inventory json
-        print("Account Found!")
+        print("Logged into account.")
         print("".center(50,"="), "\n")
         print(self.recvMsg(self.sock).decode())
-        # self.jsonFile = self.recvMsg(self.sock).decode()
-        # print("Recieved Inventory\n")
+
+        return True
 
 #################### Client Order Loop ####################
 
     def orderLoop(self):
-
-         while True:
-
+        
+        while True:
             print("".center(50,"="))
 
             #Retrieve vendor inventory
@@ -76,40 +76,54 @@ class OPDClient():
 
             ########## Digital Signature ##########
 
-            #Get type and message
-            message = input("Send something to the Host: ")
-            signType = input("Digital Signature type (DSA/RSA): ")
+            #Get order
+            order = input("Order Item (\'Quit\' to exit): ")
 
-            #Sign message
-            signature = self.signMessage(signType, message, self.username, getpass("Password to key ('None' if not used): "))
-
-            #Send type, message, and signature to Server
-            self.sendMsg(self.sock, signType)
-            self.sendMsg(self.sock, message)
-            self.sendSign(self.sock, signature)
-
-            print("\nVerifying Message...")
-
-            #Check if message is verified
-            if self.recvMsg(self.sock).decode() == "True":
-                print("Message verified.")
-
-                data = self.recvMsg(self.sock)
+            if order.lower() == "quit":
+                self.sendMsg(self.sock, order)
 
                 #End connection with host
-                if data.decode() == "goodbye":
-                    print(f"Connection ended with {self.sock.getsockname()}. Goodbye.")
+                if self.recvMsg(self.sock).decode().lower() == "quit":
                     print("".center(50,"="), "\n")
                     break
 
-                print(f"Received: {data.decode()}\n")
+            #Get digital signature type
+            signType = input("Digital Signature type (DSA/RSA): ")
 
-            else:
-                print("Message invalidated.")
-                print("".center(50,"="), "\n")
-                break
+            #Sign order
+            signature = self.signMessage(signType, order, self.username, getpass("Password to key ('None' if not used): "))
 
+            #Send order, type, signature, and timestamp to Server
+            self.sendMsg(self.sock, order)
+            self.sendMsg(self.sock, signType)
+            self.sendSign(self.sock, signature)
+            
+            time = str(datetime.now())
+            self.sendMsg(self.sock, time)
+
+            print(f"Sent order with signature to {self.sock.getsockname()}")
+
+            print(f"\n{self.sock.getsockname()} verifying order...")
+
+            #Check if order is verified
+            if self.recvMsg(self.sock).decode() == "True":
+
+                #Check timestamp
+                if self.recvMsg(self.sock).decode() == "True":
+                    print("Message verified.")
+
+                    if self.recvMsg(self.sock).decode() == "True":
+                        #Retrieve Message
+                        print(f"Order has processed. Shipping in progress.\n")
+                        print("".center(50,"="), "\n")
+                        continue
+
+            #Invalid signature/order
+            print("Order invalidated.")
             print("".center(50,"="), "\n")
+            break
+
+        print(f"Connection ended with {self.sock.getsockname()}.")
 
 #################### Client Send/Receive ####################
 
