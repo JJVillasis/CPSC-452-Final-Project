@@ -1,11 +1,7 @@
+USE THIS DOCUMENT TO TEST THE PROGRAM
 ========== Log in ==========
 Username: "Username"
 Password: "Password"
-
-========== Log in ==========
-Email: "CPSC452Final@Gmail.com"
-Password: "Pass452!"
-
 
 ========== DSA ==========
 Public Key: "publicUsernameDSA"
