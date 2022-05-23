@@ -8,16 +8,26 @@ Your implementation must provide both confidentiality and digital signature. For
 
 ## Group Members:
 Benjamin Ahn - benahn333@csu.fullerton.edu
+- Project Research
+- Order Processing Department class implementation
 
 Lyba Batla - lybabatla@csu.fullerton.edu
+- RSA Digital Signature creation/verification
 
 Casey Thatsanaphonh - cthatsanaphonh@csu.fullerton.edu
+- Design Document
+- Account Creation
 
 Joshua Villasis - JJVillasis@csu.fullerton.edu
+- Concurrent Server implementation
+- Video Demo
 
 Evan Wu - Evanh.wu@csu.fullerton.edu
+- Design Document
+- Key Pair Generation
 
 Po-Tyng (Peter) Wu - gaidepeter@csu.fullerton.edu
+- DSA digital signature creation/verification
 
 ## Programming Language:
 Python 3.10
