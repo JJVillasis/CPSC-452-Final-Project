@@ -15,16 +15,16 @@ Lyba Batla - lybabatla@csu.fullerton.edu
 - RSA Digital Signature creation/verification
 
 Casey Thatsanaphonh - cthatsanaphonh@csu.fullerton.edu
-- Design Document
 - Account Creation
+- Design Document
 
 Joshua Villasis - JJVillasis@csu.fullerton.edu
 - Concurrent Server implementation
 - Video Demo
 
 Evan Wu - Evanh.wu@csu.fullerton.edu
-- Design Document
 - Key Pair Generation
+- Design Document
 
 Po-Tyng (Peter) Wu - gaidepeter@csu.fullerton.edu
 - DSA digital signature creation/verification
