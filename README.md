@@ -45,5 +45,13 @@ To join the server as a client, enter `python Client.py <HOST ADDRESS> <PORT>` i
 - `HOST ADDRESS`: The IP address the host server is bound to
 - `PORT`: Network port the host server is listening to
 
+Next, You will have to enter your `ID` and `Password` before the OPD can begin to serve you. Once the server validates your login credentials and ensures that the account is not already logged in, you are now able to begin sending order requests. The server will send you a list of what they have in stock.
+
+To create an `order` request, choose what product you wish to purchase. Next, choose the which digital signature `type` to use to sign the `order`. Finally, enter the corresponding `privateKeyFile` and `privateKeyPassword` to sign the order form.
+
 ### Example: 
 `python Client.py 127.0.0.1 2345` connects to the server via the computer's local address "127.0.0.1" and  port "2345".
+
+Enter `Username` and `Password` to log into the server's Order Processing Department.
+
+Create an order request: `order` - "Water", `type` - "DSA", `privateKeyFile` - "privateUsernameDSA.pem", `privateKeyPassword` - "Password"
