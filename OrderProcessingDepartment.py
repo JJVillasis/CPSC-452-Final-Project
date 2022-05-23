@@ -140,6 +140,7 @@ class OrderProcessingDepartment():
                     sleep(1)
                     if self.processOrder(order.decode()):
                         print(f"{cliSock.getpeername()}: Order successfully processed.")
+                        print(f"{cliSock.getpeername()}: Email sent to " + account["email"] + ".")
                         self.sendMsg(cliSock, "True")
                         continue
 
