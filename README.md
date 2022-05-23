@@ -55,3 +55,23 @@ To create an `order` request, choose what product you wish to purchase. Next, ch
 Enter `Username` and `Password` to log into the server's Order Processing Department.
 
 Create an order request: `order` - "Water", `type` - "DSA", `privateKeyFile` - "privateUsernameDSA.pem", `privateKeyPassword` - "Password"
+
+## Generating New Keys
+To generate new keys (DSA/RSA): run the file `generateKeys.py`.
+
+The program will ask you to enter: 
+- `keyType`: the public-key type to generate (DSA/RSA), 
+- `filePR`: The name of the file the private-key will be in (must be a .pem file), 
+- `filePU`: The name of the file the public-key will be in (must be a .pem file), and 
+- `password`: the password required to use the private-key (optional).
+
+## Creating Accounts
+To create new accounts for the Order Processing Department, run the `createAccount.py` file.
+
+The program will ask you to enter: 
+- `username`: The username of the account
+- `name`: The first and last name of user
+- `password`: The password to access the account
+- `fileDSA`: The name of your public-key DSA file
+- `fileRSA`: The name of your public-key RSA file
+- `email`: The account's email address
