@@ -60,7 +60,7 @@ class OrderProcessingDepartment():
                 print(f"{cliInfo}: Account verified.")
                 self.sendMsg(clienComSock, "True")
 
-                #Check if socket is already associated with username
+                #Check if username is already associated with a socket
                 if account["username"] in self.usernameToSockDic:
                     self.sendMsg(clienComSock, "False")
                     print(f"{cliInfo}: Account \'" + str(account["username"]) + "\' already logged in to", self.usernameToSockDic[account["username"]].getpeername())

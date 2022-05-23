@@ -91,7 +91,7 @@ class OPDClient():
             signType = input("Digital Signature type (DSA/RSA): ")
 
             #Sign order
-            signature = self.signMessage(signType, order, self.username, getpass("Password to key ('None' if not used): "))
+            signature = self.signMessage(signType, order, input("Enter name of key file: "), getpass("Password to key ('None' if not used): "))
 
             #Send order, type, signature, and timestamp to Server
             self.sendMsg(self.sock, order)
@@ -114,8 +114,9 @@ class OPDClient():
 
                     if self.recvMsg(self.sock).decode() == "True":
                         #Retrieve Message
-                        print(f"Order has processed. Shipping in progress.\n")
+                        print(f"\nOrder has processed. Shipping in progress.\n")
                         print("".center(50,"="), "\n")
+                        sleep(1)
                         continue
 
             #Invalid signature/order
@@ -208,7 +209,8 @@ class OPDClient():
     def signMessage(self, signType, message, username, password):
         
         #Get file name
-        file = "private" + username + signType.upper() + ".pem"
+        #file = "private" + username + signType.upper() + ".pem"
+        file = username
 
         #DSA Digital Signature
         if signType.upper() == "DSA":
