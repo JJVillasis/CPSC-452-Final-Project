@@ -32,6 +32,8 @@ Po-Tyng (Peter) Wu - gaidepeter@csu.fullerton.edu
 ## Programming Language:
 Python 3.10
 
+Pycryptodome - `pip install cryptodome`
+
 ## How to Execute (Server):
 In a command terminal, change the directory so that it may point to the project folder.
 
