@@ -77,6 +77,8 @@ The program will ask you to enter:
 - `filePU`: The name of the file the public-key will be in (must be a .pem file), and 
 - `password`: the password required to use the private-key (optional).
 
+Place the private key files in the `Private Key PEMs` folder. Place the public key files in the `Public Key PEMs` folder.
+
 ## Creating Accounts
 To create new accounts for the Order Processing Department, run the `createAccount.py` file.
 
